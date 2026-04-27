@@ -1,4 +1,4 @@
-name: 纯净编译内核
+name: 纯净编译内核888
 on:
   workflow_dispatch:
 
