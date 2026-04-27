@@ -1,4 +1,4 @@
-name: 编译Max3-KSUNext内核
+name: 纯净编译内核
 on:
   workflow_dispatch:
 
@@ -6,38 +6,31 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-      - name: 拉取内核源码
+      - name: 拉取源码
         uses: actions/checkout@v4
         with:
           ref: MIUI-OC-P
-          fetch-depth: 1
+          
+      - name: 安装依赖
+        run: sudo apt update && sudo apt install -y git bc bison flex libssl-dev build-essential zip
 
-      - name: 安装编译依赖
-        run: |
-          sudo apt update -y
-          sudo apt install -y git bc bison flex libssl-dev build-essential zip cpio wget curl
+      - name: 下载编译器
+        run: git clone https://github.com/Black-Seraph/clang-14.git clang
 
-      - name: 下载Clang14编译器
-        run: git clone --depth=1 https://github.com/Black-Seraph/clang-14.git clang
-
-      - name: 自动集成 KernelSU Next
-        run: |
-          curl -LSs https://raw.githubusercontent.com/rifsxd/KernelSU-Next/master/kernel/setup.sh | bash
-
-      - name: 赋予编译脚本权限 & 编译
+      - name: 开始编译
         run: |
           chmod +x build.sh
           ./build.sh
 
-      - name: 打包AnyKernel3卡刷包
+      - name: 打包
         run: |
-          git clone --depth=1 https://github.com/osm0sis/AnyKernel3.git
+          git clone https://github.com/osm0sis/AnyKernel3.git
           cp out/arch/arm64/boot/Image.gz AnyKernel3/
           cd AnyKernel3
-          zip -r9 Max3_OC_KSUNext.zip *
+          zip -r9 max3_kernel.zip *
 
-      - name: 上传成品卡刷包
+      - name: 上传
         uses: actions/upload-artifact@v4
         with:
-          name: Max3-OC-KSUNext内核卡刷包
-          path: AnyKernel3/Max3_OC_KSUNext.zip
+          name: max3_kernel
+          path: AnyKernel3/max3_kernel.zip
