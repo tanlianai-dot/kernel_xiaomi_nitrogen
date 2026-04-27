@@ -1,0 +1,35 @@
+name: 编译内核
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: MIUI-OC-P
+
+      - name: 安装依赖
+        run: sudo apt update && sudo apt install -y git bc bison flex libssl-dev build-essential zip
+
+      - name: 下载编译器
+        run: git clone https://github.com/Black-Seraph/clang-14.git clang
+
+      - name: 开始编译
+        run: |
+          chmod +x build.sh
+          ./build.sh
+
+      - name: 打包卡刷包
+        run: |
+          git clone https://github.com/osm0sis/AnyKernel3.git
+          cp out/arch/arm64/boot/Image.gz AnyKernel3/
+          cd AnyKernel3
+          zip -r9 Max3_Kernel.zip *
+
+      - name: 上传成品
+        uses: actions/upload-artifact@v4
+        with:
+          name: 小米Max3刷机包
+          path: AnyKernel3/Max3_Kernel.zip
